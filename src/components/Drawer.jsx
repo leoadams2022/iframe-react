@@ -91,7 +91,7 @@ export default function Drawer() {
       >
         {selectedLink ? (
           <>
-            <p className="text-sm italic font-semibold text-gray-800 text-center">
+            <p className="text-sm italic font-semibold text-gray-800 text-center line-clamp-1">
               {selectedLink.name} -- {selectedLink.url}
             </p>
             <iframe
