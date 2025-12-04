@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Channels Drawer with Iframe Preview</title>
+
+    <!-- Tailwind config must be declared BEFORE the CDN script -->
+    <script>
+      // Tailwind setup: use class-based dark mode
+      tailwind = {
+        config: {
+          darkMode: "class",
+        },
+      };
+    </script>
+
+    <!-- Tailwind via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Flowbite styles (for form styles, etc.) -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* Hide scrollbars on elements with this class */
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .floating {
+        width: max-content;
+        position: fixed;
+        top: 0;
+        left: 0;
+      }
+      .arrow {
+        position: absolute;
+        /* background: #222; */
+        width: 8px;
+        height: 8px;
+        transform: rotate(45deg);
+      }
+    </style>
+  </head>
+  <!-- Body is initially hidden and revealed after JS initialization to avoid layout flicker -->
+  <body class="opacity-0 transition-opacity duration-300 ease-in-out">
+    <div class="w-screen h-screen relative">
+      <!-- ============== LEFT DRAWER ============== -->
+      <aside
+        id="drawer"
+        class="w-[400px] z-10 h-screen relative -translate-x-[350px] transition-transform duration-300 ease-in-out overflow-y-auto bg-white dark:bg-gray-800 overflow-hidden"
+      >
+        <!-- Drawer open/close button (floating circle) -->
+        <div
+          class="absolute top-2 right-[5px] size-[40px] rounded-full bg-gray-50 hover:bg-gray-200 dark:hover:bg-gray-600 dark:bg-gray-700"
+        >
+          <button
+            id="open-drawer-btn"
+            class="size-full flex justify-center items-center"
+            aria-label="Open drawer"
+          ></button>
+          <button
+            id="close-drawer-btn"
+            class="hidden size-full justify-center items-center"
+            aria-label="Close drawer"
+          ></button>
+
+          <!-- Icon that rotates depending on drawer state -->
+          <svg
+            id="drawer-toggle-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="size-6 pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 transition-transform duration-300 text-gray-500 dark:text-gray-300"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15M12 9l3 3m0 0-3 3m3-3H2.25"
+            />
+          </svg>
+        </div>
+
+        <!-- Theme toggle button -->
+        <div
+          class="absolute top-[56px] right-[5px] size-[40px] rounded-full bg-gray-50 hover:bg-gray-200 dark:hover:bg-gray-600 dark:bg-gray-700 overflow-hidden"
+        >
+          <button
+            id="theme-toggle"
+            class="size-[40px] relative overflow-hidden"
+            title="Toggle Theme"
+            aria-label="Toggle dark mode"
+          >
+            <div
+              class="w-[40px] h-[80px] absolute top-0 left-1/2 -translate-x-1/2 transition-transform duration-300 ease-in-out rotate-180"
+            >
+              <!-- Moon icon (dark mode) -->
+              <svg
+                id="theme-toggle-svg-moon"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-[25px] text-gray-500 dark:text-gray-300 absolute top-[8px] left-[8px]"
+                title="Dark Theme"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z"
+                />
+              </svg>
+              <!-- Sun icon (light mode) -->
+              <svg
+                id="theme-toggle-svg-sun"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-[25px] text-gray-500 dark:text-gray-300 absolute top-[48px] left-[8px]"
+                title="Light Theme"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"
+                />
+              </svg>
+            </div>
+          </button>
+        </div>
+
+        <!-- Drawer edge (for subtle fade / visual effect) -->
+        <div
+          id="drawer-edge"
+          class="absolute bottom-0 right-0 w-[50px] transition-opacity duration-300 ease-in-out opacity-100 py-2 flex flex-col items-center gap-2"
+          style="height: calc(100% - 96px)"
+        >
+          <!-- TIMER BUTTON  -->
+          <div class="size-[40px]">
+            <button
+              class="size-full rounded-full text-gray-500 dark:text-gray-300 bg-gray-50 hover:bg-gray-200 dark:hover:bg-gray-600 dark:bg-gray-700 flex justify-center items-center"
+              id="timer-btn"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-6"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                />
+              </svg>
+            </button>
+          </div>
+          <div class="size-[40px]">
+            <button
+              class="size-full rounded-full text-gray-500 dark:text-gray-300 bg-gray-50 hover:bg-gray-200 dark:hover:bg-gray-600 dark:bg-gray-700"
+              id="anchor_2"
+            >
+              D
+            </button>
+          </div>
+        </div>
+
+        <!-- Main drawer content -->
+        <div class="absolute top-0 left-0 w-[350px] h-full overflow-hidden">
+          <!-- Drawer header -->
+          <header class="py-4 px-2">
+            <h2
+              class="flex justify-start items-center gap-2 text-4xl font-bold dark:text-white"
+            >
+              Channels
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-6"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
+                />
+              </svg>
+            </h2>
+          </header>
+
+          <!-- Drawer body -->
+          <main class="py-4 px-2 space-y-6 overflow-hidden">
+            <!-- Link form (Add / Edit) -->
+            <form
+              id="links_form"
+              class="space-y-3 overflow-hidden h-0 transition-all duration-300 ease-in-out"
+              autocomplete="off"
+            >
+              <div class="flex justify-between items-center">
+                <h3
+                  class="text-xl italic font-semibold text-gray-900 dark:text-white"
+                >
+                  Add, edit, delete
+                </h3>
+                <button
+                  type="button"
+                  id="toggle_form_btn_2"
+                  class="bg-gray-50 hover:bg-gray-200 dark:hover:bg-gray-600 dark:bg-gray-700 text-gray-500 dark:text-gray-300 rounded-full w-6 h-6 flex justify-center items-center"
+                  title="Collapse/expand form"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="size-6"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="m4.5 18.75 7.5-7.5 7.5 7.5"
+                    />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="m4.5 12.75 7.5-7.5 7.5 7.5"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <div class="grid md:grid-cols-2 md:gap-6">
+                <!-- Display name -->
+                <div class="relative z-0 w-full mb-5 group">
+                  <input
+                    type="text"
+                    name="display_name"
+                    id="display_name"
+                    class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                    placeholder=" "
+                    required
+                  />
+                  <label
+                    for="display_name"
+                    class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                    >Display Name</label
+                  >
+                </div>
+
+                <!-- URL -->
+                <div class="relative z-0 w-full mb-5 group">
+                  <input
+                    type="url"
+                    name="url"
+                    id="url"
+                    class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                    placeholder=" "
+                    required
+                  />
+                  <label
+                    for="url"
+                    class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6"
+                    >URL</label
+                  >
+                </div>
+              </div>
+              <div class="relative z-0">
+                <input
+                  type="text"
+                  id="floating_standard"
+                  class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer"
+                  placeholder=" "
+                />
+                <label
+                  for="floating_standard"
+                  class="absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto"
+                  >Floating standard</label
+                >
+              </div>
+
+              <!-- Validation error message -->
+              <div id="error_msg" class="text-red-500 text-sm"></div>
+
+              <!-- Form actions -->
+              <div class="flex items-center gap-6">
+                <button
+                  id="save-btn"
+                  type="submit"
+                  class="text-blue-700 hover:text-white border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-bold rounded-md text-sm px-2 py-1 text-center me-2 mb-2 dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:hover:bg-blue-500 dark:focus:ring-blue-800"
+                >
+                  <span id="save_btn_label">ADD</span>
+                </button>
+                <button
+                  id="cancel_edit_btn"
+                  type="button"
+                  class="text-red-700 hover:text-white border border-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-bold rounded-md text-sm px-2 py-1 text-center me-2 mb-2 dark:border-red-500 dark:text-red-500 dark:hover:text-white dark:hover:bg-red-600 dark:focus:ring-red-900"
+                  style="display: none"
+                >
+                  <span>Cancel</span>
+                </button>
+              </div>
+            </form>
+
+            <!-- Saved links list -->
+            <section class="space-y-2">
+              <!-- List title + count + add button -->
+              <div class="flex justify-between items-center">
+                <h2
+                  class="flex justify-start items-center gap-2 text-xl italic font-semibold text-gray-900 dark:text-white"
+                >
+                  Saved Links
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="size-6"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0ZM3.75 12h.007v.008H3.75V12Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm-.375 5.25h.007v.008H3.75v-.008Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
+                    />
+                  </svg>
+                </h2>
+
+                <div class="flex justify-center items-center gap-2">
+                  <!-- Links counter -->
+                  <span
+                    id="links_count"
+                    class="bg-gray-50 hover:bg-gray-200 dark:hover:bg-gray-600 dark:bg-gray-700 text-gray-500 dark:text-gray-300 rounded-full w-6 h-6 flex justify-center items-center text-xs"
+                    >0</span
+                  >
+
+                  <!-- Primary form toggle button (big + icon) -->
+                  <button
+                    id="toggle_form_btn"
+                    type="button"
+                    class="bg-gray-50 hover:bg-gray-200 dark:hover:bg-gray-600 dark:bg-gray-700 text-gray-500 dark:text-gray-300 rounded-full w-6 h-6 flex justify-center items-center"
+                    title="Add a new link"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="1.5"
+                      stroke="currentColor"
+                      class="size-6"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M12 4.5v15m7.5-7.5h-15"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Sortable list container -->
+              <div
+                id="links_list"
+                class="insertList h-[78vh] overflow-y-auto no-scrollbar space-y-2 py-6 transition-all duration-300 ease-in-out text-gray-500 dark:text-gray-300"
+              ></div>
+            </section>
+          </main>
+        </div>
+      </aside>
+
+      <!-- ============== DRAWER OVERLAY ============== -->
+      <div
+        id="drawer_overlay"
+        style="width: calc(100vw - 400px)"
+        class="fixed top-0 right-0 bg-gray-400/60 h-screen z-10 hidden opacity-0 transition-opacity duration-300 ease-in-out"
+      ></div>
+      <!-- ============== DRAWER OVERLAY 2 ============== -->
+      <div
+        id="drawer_overlay_2"
+        style="width: calc(100vw - 50px)"
+        class="fixed top-0 right-0 bg-gray-400/60 h-screen z-10 hidden opacity-0 transition-opacity duration-300 ease-in-out"
+      ></div>
+
+      <!-- ============== RIGHT CONTENT (IFRAME) ============== -->
+      <section
+        class="h-full fixed top-0 right-0 bg-slate-200"
+        style="width: calc(100% - 50px)"
+      >
+        <div
+          id="current_link_label"
+          class="flex justify-center items-center py-1 w-full"
+          style="height: 20px"
+        >
+          <p class="text-sm italic font-semibold text-gray-800 text-center">
+            Preview
+          </p>
+        </div>
+
+        <iframe
+          id="preview_frame"
+          src="about:blank"
+          allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+          class="w-full border-0"
+          style="height: calc(100% - 20px)"
+        >
+        </iframe>
+      </section>
+
+      <!-- FLOATING ELEMENTS -->
+
+      <!-- TIMER FLOATING TOOLTIP -->
+      <div
+        id="timer-btn-floating"
+        class="floating z-20 hidden pointer-events-none opacity-0 transition-all duration-300 ease-in-out max-w-sm p-6 border rounded-lg shadow-sm bg-slate-200 text-slate-800 border-gray-400 dark:bg-slate-900 dark:text-slate-200 dark:border-gray-600"
+      >
+        <h5
+          class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white"
+        >
+          Sleep Timer
+        </h5>
+      </div>
+
+      <div id="floating_2" class="floating z-20 hidden pointer-events-none
+      opacity-0 left-[50px] top-0 transition-all duration-300 ease-in-out
+      max-w-sm p-6 border rounded-lg shadow-sm bg-slate-200 text-slate-800
+      border-gray-400 dark:bg-slate-900 dark:
+      <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">
+        Here are the biggest enterprise technology acquisitions of 2021 so far,
+        in reverse chronological order.
+      </p>
+      <a
+        href="#"
+        class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+      >
+        Read more
+        <svg
+          class="rtl:rotate-180 w-3.5 h-3.5 ms-2"
+          aria-hidden="true"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 14 10"
+        >
+          <path
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M1 5h12m0 0L9 1m4 4L9 9"
+          />
+        </svg> </a
+      >text-slate-200 dark:border-gray-600" >
+      <span>Tooltip_2</span>
+    </div>
+
+    <!-- SortableJS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+
+    <!-- Floating UI CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@floating-ui/core@1.7.3"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@floating-ui/dom@1.7.4"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@4.0.1/dist/flowbite.min.js"></script>
+
+    <!-- Main application script -->
+    <script>
+      (function () {
+        // ----------------------------
+        // State & constants
+        // ----------------------------
+        const STORAGE_KEY = "iframe_links_v1";
+
+        let links = [];
+        let currentEditIndex = null;
+        let isDrawerOpen = false;
+        let isDarkMode = false;
+        let isFormOpen = false;
+        let thereIsAnActiveTooltip = false;
+
+        // ----------------------------
+        // DOM elements
+        // ----------------------------
+        const drawer = document.getElementById("drawer");
+        const drawerEdge = document.getElementById("drawer-edge");
+        const drawerOverlay = document.getElementById("drawer_overlay");
+        const drawerOverlay2 = document.getElementById("drawer_overlay_2");
+        const drawerToggleIcon = document.getElementById("drawer-toggle-icon");
+        const openDrawerBtn = document.getElementById("open-drawer-btn");
+        const closeDrawerBtn = document.getElementById("close-drawer-btn");
+
+        const themeToggleBtn = document.getElementById("theme-toggle");
+
+        const form = document.getElementById("links_form");
+        const toggleFormBtn = document.getElementById("toggle_form_btn");
+        const toggleFormBtn2 = document.getElementById("toggle_form_btn_2");
+
+        const linksListEl = document.getElementById("links_list");
+        const linksCountEl = document.getElementById("links_count");
+
+        const nameInput = document.getElementById("display_name");
+        const urlInput = document.getElementById("url");
+        const errorMsg = document.getElementById("error_msg");
+        const saveBtnLabel = document.getElementById("save_btn_label");
+        const cancelEditBtn = document.getElementById("cancel_edit_btn");
+
+        const iframe = document.getElementById("preview_frame");
+        const currentLinkLabel = document.getElementById("current_link_label");
+
+        // ----------------------------
+        // LocalStorage helpers
+        // ----------------------------
+        function loadLinks() {
+          try {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+              links = JSON.parse(stored);
+            } else {
+              // Default set of links shown on first load
+              links = [
+                { name: "MDN Web Docs", url: "https://developer.mozilla.org" },
+                { name: "Wikipedia", url: "https://www.wikipedia.org" },
+              ];
+              saveLinks();
+            }
+          } catch (e) {
+            console.warn(
+              "Failed to load from localStorage, starting empty.",
+              e
+            );
+            links = [];
+          }
+        }
+
+        function saveLinks() {
+          try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(links));
+          } catch (e) {
+            console.warn("Failed to save to localStorage.", e);
+          }
+        }
+
+        // ----------------------------
+        // Drawer handling
+        // ----------------------------
+        function openDrawer() {
+          if (isDrawerOpen) return;
+          isDrawerOpen = true;
+
+          drawerToggleIcon.classList.toggle("rotate-180");
+          drawerOverlay.classList.remove("hidden");
+
+          setTimeout(() => {
+            drawerOverlay.classList.toggle("opacity-0");
+            drawerOverlay.classList.toggle("opacity-100");
+            drawer.classList.remove("-translate-x-[350px]");
+
+            openDrawerBtn.classList.add("hidden");
+            openDrawerBtn.classList.remove("flex");
+
+            closeDrawerBtn.classList.remove("hidden");
+            closeDrawerBtn.classList.add("flex");
+
+            // drawerEdge.classList.toggle("opacity-0");
+            // drawerEdge.classList.toggle("opacity-100");
+            // drawerEdge.classList.toggle("pointer-events-none");
+
+            // setTimeout(() => {
+            //   drawerEdge.style.display = "none";
+            // }, 300);
+          }, 150);
+        }
+
+        function closeDrawer() {
+          if (!isDrawerOpen) return;
+          isDrawerOpen = false;
+
+          drawerToggleIcon.classList.toggle("rotate-180");
+
+          setTimeout(() => {
+            drawerOverlay.classList.toggle("opacity-0");
+            drawerOverlay.classList.toggle("opacity-100");
+            drawer.classList.add("-translate-x-[350px]");
+
+            openDrawerBtn.classList.remove("hidden");
+            openDrawerBtn.classList.add("flex");
+
+            closeDrawerBtn.classList.add("hidden");
+            closeDrawerBtn.classList.remove("flex");
+
+            // drawerEdge.style.display = "block";
+            // drawerEdge.classList.toggle("pointer-events-none");
+
+            setTimeout(() => {
+              // drawerEdge.classList.toggle("opacity-0");
+              // drawerEdge.classList.toggle("opacity-100");
+            }, 50);
+
+            setTimeout(() => {
+              drawerOverlay.classList.add("hidden");
+            }, 300);
+          }, 150);
+        }
+
+        // Close drawer when clicking outside
+        document.body.addEventListener("click", (e) => {
+          if (
+            isDrawerOpen &&
+            !drawer.contains(e.target) &&
+            !openDrawerBtn.contains(e.target) &&
+            !closeDrawerBtn.contains(e.target) &&
+            !drawerEdge.contains(e.target)
+          ) {
+            closeDrawer();
+          }
+        });
+
+        // ----------------------------
+        // Theme handling
+        // ----------------------------
+        tailwind.config = {
+          darkMode: "class",
+        };
+        function applyThemeFromStorage() {
+          const storedTheme = localStorage.getItem("theme");
+          const prefersDark =
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+          const shouldUseDark = storedTheme
+            ? storedTheme === "dark"
+            : prefersDark;
+
+          if (shouldUseDark) {
+            document.body.classList.add("dark");
+            isDarkMode = true;
+            themeToggleBtn.querySelector("div").classList.add("rotate-180");
+          } else {
+            document.body.classList.remove("dark");
+            isDarkMode = false;
+            themeToggleBtn.querySelector("div").classList.remove("rotate-180");
+          }
+        }
+
+        function toggleTheme() {
+          isDarkMode = !isDarkMode;
+          document.body.classList.toggle("dark");
+
+          // Persist preference
+          localStorage.setItem("theme", isDarkMode ? "dark" : "light");
+
+          // Animate icons
+          themeToggleBtn.querySelector("div").classList.toggle("rotate-180");
+        }
+
+        // ----------------------------
+        // Form helpers
+        // ----------------------------
+        function showError(msg) {
+          errorMsg.textContent = msg;
+          errorMsg.style.display = "block";
+        }
+
+        function hideError() {
+          errorMsg.textContent = "";
+          errorMsg.style.display = "none";
+        }
+
+        function resetForm() {
+          form.reset();
+          currentEditIndex = null;
+          saveBtnLabel.textContent = "ADD";
+          cancelEditBtn.style.display = "none";
+          hideError();
+        }
+
+        function toggleForm() {
+          isFormOpen = !isFormOpen;
+
+          form.classList.toggle("h-0");
+          form.classList.toggle("h-[160px]");
+
+          // Shrink list height when form is open
+          linksListEl.classList.toggle("h-[78vh]");
+          linksListEl.classList.toggle("h-[58vh]");
+
+          // Reset when toggling closed
+          if (!isFormOpen) {
+            resetForm();
+          }
+        }
+
+        function isValidUrl(value) {
+          try {
+            let testValue = value.trim();
+            if (!/^https?:\/\//i.test(testValue)) {
+              testValue = "https://" + testValue;
+            }
+            new URL(testValue);
+            return true;
+          } catch {
+            return false;
+          }
+        }
+
+        // ----------------------------
+        // Link CRUD
+        // ----------------------------
+        function renderLinks() {
+          linksListEl.innerHTML = "";
+
+          if (links.length === 0) {
+            const empty = document.createElement("div");
+            empty.className = "text-xs text-gray-500 dark:text-gray-400 italic";
+            empty.textContent = "No links yet. Add one above!";
+            linksListEl.appendChild(empty);
+            linksCountEl.textContent = "0";
+            return;
+          }
+
+          linksCountEl.textContent = String(links.length);
+
+          links.forEach((link, index) => {
+            const row = document.createElement("div");
+            row.dataset.name = link.name;
+            row.dataset.url = link.url;
+
+            row.className =
+              "p-2 bg-gray-100 dark:bg-gray-700 rounded-md text-gray-900 dark:text-white flex justify-between items-center select-none cursor-pointer";
+
+            // Clicking the whole row opens link in iframe
+            row.addEventListener("click", () => {
+              openLinkInIframe(index);
+              closeDrawer();
+            });
+
+            // Left text area
+            const textWrapper = document.createElement("div");
+            const titleEl = document.createElement("h4");
+            titleEl.className = "font-semibold text-sm mb-1 line-clamp-1";
+            titleEl.textContent = link.name || "(no name)";
+            titleEl.title = link.name || "(no name)";
+
+            const urlEl = document.createElement("p");
+            urlEl.className =
+              "text-xs text-gray-600 dark:text-gray-300 break-all line-clamp-1";
+            urlEl.textContent = link.url;
+            urlEl.title = link.url;
+
+            textWrapper.appendChild(titleEl);
+            textWrapper.appendChild(urlEl);
+
+            // Right buttons (edit / delete / drag)
+            const buttonsWrapper = document.createElement("div");
+            buttonsWrapper.className = "flex justify-center items-center gap-1";
+
+            // Edit
+            const editBtn = document.createElement("button");
+            editBtn.type = "button";
+            editBtn.className =
+              "text-blue-600 hover:text-white hover:bg-blue-600 rounded-md p-1";
+            editBtn.innerHTML = `
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                   viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                   class="size-4">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125" />
+              </svg>`;
+            editBtn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              if (!isFormOpen) {
+                toggleForm();
+              }
+              startEditLink(index);
+            });
+
+            // Delete
+            const deleteBtn = document.createElement("button");
+            deleteBtn.type = "button";
+            deleteBtn.className =
+              "text-red-600 hover:text-white hover:bg-red-600 rounded-md p-1";
+            deleteBtn.innerHTML = `
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                   viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                   class="size-4">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107
+                         1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244
+                         2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772
+                         5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12
+                         .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11
+                         0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964
+                         51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09
+                         2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+              </svg>`;
+            deleteBtn.addEventListener("click", (e) => {
+              e.stopPropagation();
+              deleteLink(index);
+            });
+
+            // Drag handle (for SortableJS)
+            const dragHandleBtn = document.createElement("button");
+            dragHandleBtn.type = "button";
+            dragHandleBtn.className =
+              "drag-handle text-gray-500 cursor-move hover:text-white hover:bg-gray-500 rounded-md p-1";
+            dragHandleBtn.innerHTML = `
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                   viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                   class="size-4">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M3.75 9h16.5m-16.5 6.75h16.5" />
+              </svg>`;
+
+            buttonsWrapper.appendChild(editBtn);
+            buttonsWrapper.appendChild(deleteBtn);
+            buttonsWrapper.appendChild(dragHandleBtn);
+
+            row.appendChild(textWrapper);
+            row.appendChild(buttonsWrapper);
+            linksListEl.appendChild(row);
+          });
+        }
+
+        function openLinkInIframe(index) {
+          const link = links[index];
+          if (!link) return;
+          iframe.src = link.url;
+          currentLinkLabel.textContent = `${link.name} — ${link.url}`;
+        }
+
+        function startEditLink(index) {
+          const link = links[index];
+          if (!link) return;
+          currentEditIndex = index;
+          nameInput.value = link.name;
+          urlInput.value = link.url;
+          saveBtnLabel.textContent = "Save Changes";
+          cancelEditBtn.style.display = "block";
+          hideError();
+          nameInput.focus();
+        }
+
+        function deleteLink(index) {
+          const link = links[index];
+          if (!link) return;
+          if (!confirm("Delete this link?")) return;
+          links.splice(index, 1);
+          saveLinks();
+          renderLinks();
+          if (currentEditIndex === index) {
+            resetForm();
+          }
+        }
+
+        // ----------------------------
+        // SortableJS setup (drag & drop reordering)
+        // ----------------------------
+        function setupSortable() {
+          if (typeof Sortable === "undefined") {
+            console.warn("SortableJS not found. Drag-and-drop disabled.");
+            return;
+          }
+
+          const sortable = new Sortable(linksListEl, {
+            animation: 150,
+            ghostClass: "opacity-40",
+            handle: ".drag-handle",
+          });
+
+          // When drag ends, rebuild `links` from DOM and persist
+          sortable.option("onEnd", () => {
+            const newOrder = [...linksListEl.children]
+              .filter((child) => child.dataset && child.dataset.url)
+              .map((child) => ({
+                name: child.dataset.name,
+                url: child.dataset.url,
+              }));
+
+            // Only update if we actually got something meaningful
+            if (newOrder.length > 0) {
+              links = newOrder;
+              saveLinks();
+            }
+          });
+        }
+
+        // ----------------------------
+        // Event listeners
+        // ----------------------------
+        function bindEvents() {
+          // Drawer
+          openDrawerBtn.addEventListener("click", openDrawer);
+          closeDrawerBtn.addEventListener("click", closeDrawer);
+          drawerOverlay.addEventListener("click", closeDrawer);
+
+          // Theme
+          themeToggleBtn.addEventListener("click", toggleTheme);
+
+          // Form toggle buttons
+          toggleFormBtn.addEventListener("click", toggleForm);
+          toggleFormBtn2.addEventListener("click", toggleForm);
+
+          // Form submit
+          form.addEventListener("submit", (e) => {
+            e.preventDefault();
+            hideError();
+
+            let name = nameInput.value.trim();
+            let url = urlInput.value.trim();
+
+            if (!name) {
+              showError("Display name is required.");
+              return;
+            }
+
+            if (!url) {
+              showError("URL is required.");
+              return;
+            }
+
+            // If no protocol, assume https://
+            if (!/^https?:\/\//i.test(url)) {
+              url = "https://" + url;
+            }
+
+            if (!isValidUrl(url)) {
+              showError("Please enter a valid URL.");
+              return;
+            }
+
+            const linkData = { name, url };
+
+            if (currentEditIndex === null) {
+              // Add
+              links.push(linkData);
+            } else {
+              // Update
+              links[currentEditIndex] = linkData;
+            }
+
+            saveLinks();
+            renderLinks();
+            resetForm();
+          });
+
+          // Cancel edit
+          cancelEditBtn.addEventListener("click", resetForm);
+        }
+
+        // ----------------------------
+        // ToolTip
+        // ----------------------------
+        function placeTooltip(
+          button,
+          tooltip,
+          placement = "right",
+          shiftPadding = 5,
+          offsetValue = 6
+        ) {
+          const hasArrow =
+            tooltip.querySelector(".arrow") !== null ? true : false;
+          let arrowElement;
+          if (hasArrow) {
+            arrowElement = tooltip.querySelector(".arrow");
+          } else {
+            arrowElement = document.createElement("div");
+          }
+          const bg = window.getComputedStyle(tooltip).backgroundColor;
+          arrowElement.style.background = bg;
+          if (!hasArrow) {
+            arrowElement.className = "arrow";
+            tooltip.appendChild(arrowElement);
+          }
+          window.FloatingUIDOM.computePosition(button, tooltip, {
+            placement,
+            middleware: [
+              window.FloatingUIDOM.flip(),
+              window.FloatingUIDOM.shift({ padding: shiftPadding }),
+              window.FloatingUIDOM.offset(offsetValue),
+              window.FloatingUIDOM.arrow({
+                element: arrowElement,
+              }),
+            ],
+          }).then(({ x, y, placement, middlewareData }) => {
+            Object.assign(tooltip.style, {
+              left: `${x}px`,
+              top: `${y}px`,
+            });
+
+            // Accessing the data
+            const { x: arrowX, y: arrowY } = middlewareData.arrow;
+            const staticSide = {
+              top: "bottom",
+              right: "left",
+              bottom: "top",
+              left: "right",
+            }[placement.split("-")[0]];
+
+            Object.assign(arrowElement.style, {
+              left: arrowX != null ? `${arrowX}px` : "",
+              top: arrowY != null ? `${arrowY}px` : "",
+              right: "",
+              bottom: "",
+              [staticSide]: "-4px",
+            });
+          });
+        }
+
+        function toggleTooltip(
+          button,
+          tooltip,
+          bodyClickHandler,
+          placement = "right",
+          shiftPadding = 5,
+          offsetValue = 6
+        ) {
+          thereIsAnActiveTooltip = !thereIsAnActiveTooltip;
+          const isHidden = tooltip.classList.contains("hidden");
+
+          const toggleClass = () => {
+            tooltip.classList.toggle("opacity-0");
+            tooltip.classList.toggle("pointer-events-none");
+            if (!thereIsAnActiveTooltip)
+              drawerOverlay2.classList.toggle("opacity-0");
+          };
+          if (isHidden) {
+            tooltip.classList.remove("hidden");
+            drawerOverlay2.classList.remove("hidden");
+            if (isDrawerOpen)
+              drawerOverlay2.style.width = "calc(100vw - 400px)";
+            else drawerOverlay2.style.width = "calc(100vw - 50px)";
+            placeTooltip(button, tooltip, placement, shiftPadding, offsetValue);
+            setTimeout(() => {
+              toggleClass();
+            }, 10);
+            bodyClickHandler = (e) => {
+              if (!tooltip.contains(e.target) && !button.contains(e.target)) {
+                toggleTooltip(
+                  button,
+                  tooltip,
+                  bodyClickHandler,
+                  placement,
+                  shiftPadding,
+                  offsetValue
+                );
+              }
+            };
+            document.body.addEventListener("click", bodyClickHandler);
+          } else {
+            if (bodyClickHandler) {
+              document.body.removeEventListener("click", bodyClickHandler);
+              bodyClickHandler = null;
+            }
+            toggleClass();
+            setTimeout(() => {
+              tooltip.classList.toggle("hidden");
+
+              if (!thereIsAnActiveTooltip)
+                drawerOverlay2.classList.add("hidden");
+            }, 300);
+          }
+        }
+
+        const floatingTooltips = [
+          [
+            document.querySelector("#timer-btn"), // button
+            document.querySelector("#timer-btn-floating"), // tooltip
+            null, // bodyClickHandler
+            "right", // placement
+            5, // shiftPadding
+            6, // offsetValue
+          ],
+          [
+            document.querySelector("#anchor_2"), //button
+            document.querySelector("#floating_2"), //tooltip
+            null, //bodyClickHandler
+            "right", //placement
+            5, //shiftPadding
+            6, //offsetValue
+          ],
+        ];
+
+        function initFloatingTooltips() {
+          floatingTooltips.forEach((floatingObj) => {
+            floatingObj[0].addEventListener("click", () => {
+              toggleTooltip(...([a, b, c, d, e, f] = floatingObj));
+            });
+          });
+        }
+        // ----------------------------
+        // Init
+        // ----------------------------
+        function init() {
+          applyThemeFromStorage();
+          loadLinks();
+          renderLinks();
+          setupSortable();
+          bindEvents();
+          initFloatingTooltips();
+
+          // Reveal body after everything is wired up
+          setTimeout(() => {
+            document.body.classList.remove("opacity-0");
+          }, 20);
+        }
+
+        // Wait for DOM to be ready
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", init);
+        } else {
+          init();
+        }
+      })();
+    </script>
+
+    <!-- Flowbite JS (optional; used if you add Flowbite components) -->
+    <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
+  </body>
+</html>
