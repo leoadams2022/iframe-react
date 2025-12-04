@@ -85,7 +85,7 @@ export default function Drawer() {
   return (
     <div className="w-screen h-screen relative">
       <div
-        className={`w-full sm:w-[calc(100%-50px)] h-screen absolute top-0 right-0 ${
+        className={`w-[calc(100%-50px)] h-screen absolute top-0 right-0 ${
           popoverOpen ? "-z-20" : ""
         }`}
       >
