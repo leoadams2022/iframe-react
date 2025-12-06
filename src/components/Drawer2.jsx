@@ -51,7 +51,7 @@ export default function Drawer() {
   return (
     <div className=" w-svw h-svh relative ">
       <h1 className="text-5xl font-bold text-center absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-        Pick a Channel
+        Pick-a-Channel
       </h1>
       <iframe
         src={selectedLink ? selectedLink.url : "about:blank"}
