@@ -59,6 +59,7 @@ export default function Drawer() {
         className={`w-full h-[calc(100%-32px)] absolute bottom-0 left-0 border-0 ${
           selectedLink ? "block" : "hidden"
         }`}
+        sandbox="allow-scripts allow-same-origin"
       ></iframe>
       {/* top bar  */}
       <div
