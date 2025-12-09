@@ -19,3 +19,8 @@
   height: 8px;
   transform: rotate(45deg);
 }
+.red-star::after {
+  content: " *";
+  color: red;
+  font-weight: bold;
+}

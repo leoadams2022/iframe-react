@@ -16,52 +16,110 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Button, Label, TextInput, Popover } from "flowbite-react";
-
 const STORAGE_KEY = "iframe_links_v1";
-
-/** Random ID generator (prefers crypto.randomUUID) */
-function makeId() {
-  if (typeof crypto !== "undefined" && crypto.randomUUID)
-    return crypto.randomUUID();
-  return `id_${Date.now().toString(36)}_${Math.random()
-    .toString(36)
-    .slice(2, 10)}`;
-}
-
-/** Ensures every link has an id (migrates old storage format). */
-function ensureIds(list) {
-  let changed = false;
-  const next = (Array.isArray(list) ? list : []).map((l) => {
-    if (l && typeof l === "object" && l.id) return l;
-    changed = true;
-    return { ...l, id: makeId() };
-  });
-  return { next, changed };
-}
 
 const topbarButtonClass =
   "size-6 flex justify-center items-center rounded-full cursor-pointer bg-slate-100 hover:bg-white dark:hover:bg-gray-600 dark:bg-gray-700";
-export default function Drawer() {
+/* eslint-disable react-refresh/only-export-components */
+// StateManger.jsx
+
+const StateMangerContext = React.createContext(undefined);
+
+export function StateMangerProvider({ children }) {
+  // ✅ exposed states
   const [links, setLinks] = React.useState([]);
   const [selectedLink, setSelectedLink] = React.useState(null);
   const [lastSelectedLink, setLastSelectedLink] = React.useState(null);
   const [editingId, setEditingId] = React.useState(null);
-  const [showForm, setShowForm] = React.useState(false);
-
   const [showTopBar, setShowTopBar] = React.useState(true);
-  const [showChannels, setShowChannels] = React.useState(false);
+  const [activeScreen, setActiveScreen] = React.useState(null);
+  //   const [showForm, setShowForm] = React.useState(false);
+  //   const [showChannels, setShowChannels] = React.useState(false);
+  const [armedId, setArmedId] = React.useState(null);
 
+  const value = React.useMemo(
+    () => ({
+      links,
+      setLinks,
+      selectedLink,
+      setSelectedLink,
+      lastSelectedLink,
+      setLastSelectedLink,
+      editingId,
+      setEditingId,
+      //   showForm,
+      //   setShowForm,
+      showTopBar,
+      setShowTopBar,
+      activeScreen,
+      setActiveScreen,
+      //   showChannels,
+      //   setShowChannels,
+      armedId,
+      setArmedId,
+    }),
+    [
+      links,
+      selectedLink,
+      lastSelectedLink,
+      editingId,
+      //   showForm,
+      showTopBar,
+      activeScreen,
+      //   showChannels,
+      armedId,
+    ]
+  );
+
+  return (
+    <StateMangerContext.Provider value={value}>
+      {children}
+    </StateMangerContext.Provider>
+  );
+}
+
+export function useStateManger() {
+  const ctx = React.useContext(StateMangerContext);
+  if (!ctx) {
+    throw new Error("useStateManger must be used within a StateMangerProvider");
+  }
+  return ctx;
+}
+
+export default function Drawer() {
+  return (
+    <StateMangerProvider>
+      <DrawerUnderContext />
+    </StateMangerProvider>
+  );
+}
+
+function DrawerUnderContext() {
+  const {
+    links,
+    selectedLink,
+    setSelectedLink,
+    lastSelectedLink,
+    setLastSelectedLink,
+    showTopBar,
+    activeScreen,
+    setActiveScreen,
+  } = useStateManger();
   return (
     <div className=" w-svw h-svh relative ">
       <h1 className="text-5xl font-bold text-center absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
         Pick-a-Channel
       </h1>
       <iframe
-        src={selectedLink ? selectedLink.url : "about:blank"}
-        allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
-        className={`w-full h-[calc(100%-32px)] absolute bottom-0 left-0 border-0 ${
+        //  ${selectedLink ? "block" : "hidden"}
+        className={`${
           selectedLink ? "block" : "hidden"
-        }`}
+        } w-full h-[calc(100%-32px)]  absolute bottom-0 left-0 border-0`}
+        src={selectedLink ? selectedLink.url : "about:blank"}
+        frameBorder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        referrerPolicy="strict-origin-when-cross-origin"
+        allowFullScreen
       ></iframe>
       {/* top bar  */}
       <div
@@ -73,7 +131,7 @@ export default function Drawer() {
         <button
           className={topbarButtonClass}
           onClick={() => {
-            setShowChannels((c) => !c);
+            setActiveScreen("channels");
           }}
         >
           <svg
@@ -97,8 +155,7 @@ export default function Drawer() {
         <button
           className={topbarButtonClass}
           onClick={() => {
-            setShowChannels(false);
-            setShowForm(true);
+            setActiveScreen("form");
           }}
         >
           <svg
@@ -116,44 +173,131 @@ export default function Drawer() {
             />
           </svg>
         </button>
+        <div className="flex items-center justify-evenly gap-4">
+          {/* priveos channel */}
+          <button
+            className={
+              topbarButtonClass +
+              " " +
+              (selectedLink ? "" : "hidden") +
+              " " +
+              (0 === links.findIndex((l) => l.id === selectedLink?.id)
+                ? "hidden"
+                : "")
+            }
+            onClick={() => {
+              const currentIndex = links.findIndex(
+                (l) => l.id === selectedLink?.id
+              );
+              const nextLink =
+                currentIndex <= links.length - 1
+                  ? links[currentIndex - 1]
+                  : undefined;
+
+              if (nextLink) {
+                setLastSelectedLink(selectedLink);
+                setSelectedLink(nextLink);
+              } else {
+                alert("No more channels");
+              }
+            }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="size-4"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="m18.75 4.5-7.5 7.5 7.5 7.5m-6-15L5.25 12l7.5 7.5"
+              />
+            </svg>
+          </button>
+          {/* go back channel  */}
+          {lastSelectedLink && (
+            <button
+              onClick={() => {
+                setLastSelectedLink(selectedLink);
+                setSelectedLink(lastSelectedLink);
+              }}
+              className={`px-1 rounded-full cursor-pointer bg-slate-100 hover:bg-white dark:hover:bg-gray-600 dark:bg-gray-700 flex justify-center items-center gap-1`}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="size-4"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"
+                />
+              </svg>
+              <p className="text-xs">{lastSelectedLink.name}</p>
+            </button>
+          )}
+          {selectedLink && (
+            <button
+              className={`px-1 rounded-full cursor-pointer bg-slate-100 hover:bg-white dark:hover:bg-gray-600 dark:bg-gray-700 flex justify-center items-center gap-1`}
+            >
+              <p className="text-xs">{selectedLink.name}</p>
+            </button>
+          )}
+          {/* next channel */}
+          <button
+            className={
+              topbarButtonClass +
+              " " +
+              (selectedLink ? "" : "hidden") +
+              " " +
+              (links.length - 1 ===
+              links.findIndex((l) => l.id === selectedLink?.id)
+                ? "hidden"
+                : "")
+            }
+            onClick={() => {
+              const currentIndex = links.findIndex(
+                (l) => l.id === selectedLink?.id
+              );
+              const nextLink =
+                currentIndex >= 0 ? links[currentIndex + 1] : undefined;
+
+              if (nextLink) {
+                setLastSelectedLink(selectedLink);
+                setSelectedLink(nextLink);
+              } else {
+                alert("No more channels");
+              }
+            }}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="size-4"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="m5.25 4.5 7.5 7.5-7.5 7.5m6-15 7.5 7.5-7.5 7.5"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* channels  */}
-      {!showForm && showChannels && (
-        <Channels
-          {...{
-            links,
-            setLinks,
-            selectedLink,
-            setSelectedLink,
-            lastSelectedLink,
-            setLastSelectedLink,
-            showChannels,
-            setShowChannels,
-            setEditingId,
-            showForm,
-            setShowForm,
-          }}
-        />
-      )}
-      {showForm && (
-        <Form
-          {...{
-            links,
-            setLinks,
-            selectedLink,
-            setSelectedLink,
-            lastSelectedLink,
-            setLastSelectedLink,
-            showChannels,
-            setShowChannels,
-            setEditingId,
-            editingId,
-            showForm,
-            setShowForm,
-          }}
-        />
-      )}
+      {activeScreen === "channels" && <Channels />}
+      {activeScreen === "form" && <Form />}
     </div>
   );
 }
@@ -233,19 +377,39 @@ function DarkModeToggleButton() {
   );
 }
 
-function Channels({
-  links,
-  setLinks,
-  selectedLink,
-  setSelectedLink,
-  lastSelectedLink,
-  setLastSelectedLink,
-  showChannels,
-  setShowChannels,
-  setEditingId,
-  showForm,
-  setShowForm,
-}) {
+// ! Channels-------------------------------------------------------------------------------------------------------------------
+
+// helpers functions
+/** Random ID generator (prefers crypto.randomUUID) */
+function makeId() {
+  if (typeof crypto !== "undefined" && crypto.randomUUID)
+    return crypto.randomUUID();
+  return `id_${Date.now().toString(36)}_${Math.random()
+    .toString(36)
+    .slice(2, 10)}`;
+}
+
+/** Ensures every link has an id (migrates old storage format). */
+function ensureIds(list) {
+  let changed = false;
+  const next = (Array.isArray(list) ? list : []).map((l) => {
+    if (l && typeof l === "object" && l.id) return l;
+    changed = true;
+    return { ...l, id: makeId() };
+  });
+  return { next, changed };
+}
+
+function Channels() {
+  const {
+    setLinks,
+    // showChannels,
+    // setShowChannels,
+    activeScreen,
+    setActiveScreen,
+    // showForm,
+    // setShowForm,
+  } = useStateManger();
   function loadLinks() {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -512,9 +676,9 @@ function Channels({
   return (
     <div
       className={`size-full absolute top-0 left-0 flex justify-center items-center  bg-white/50 dark:bg-gray-500/50  ${
-        showChannels ? "block" : "hidden"
+        activeScreen === "channels" ? "block" : "hidden"
       }`}
-      onClick={() => setShowChannels((c) => !c)}
+      onClick={() => setActiveScreen(null)}
     >
       <div
         className={`size-[90%] relative p-2 overflow-y-auto rounded-lg bg-slate-300 text-slate-900 dark:bg-gray-800 dark:text-slate-100 border border-gray-600 dark:border-gray-300`}
@@ -526,7 +690,7 @@ function Channels({
             topbarButtonClass +
             " absolute top-1 right-1 bg-slate-300 text-slate-900 dark:bg-gray-800 dark:text-slate-100"
           }
-          onClick={() => setShowChannels((c) => !c)}
+          onClick={() => setActiveScreen(null)}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -544,37 +708,16 @@ function Channels({
           </svg>
         </button>
         {/* channels grid  */}
-        <DndGrid
-          {...{
-            links,
-            setLinks,
-            selectedLink,
-            setSelectedLink,
-            setLastSelectedLink,
-            setShowChannels,
-            setEditingId,
-            showForm,
-            setShowForm,
-          }}
-        />
+        <DndGrid />
       </div>
     </div>
   );
 }
 
-function DndGrid({
-  links,
-  setLinks,
-  selectedLink,
-  setSelectedLink,
-  setLastSelectedLink,
-  setShowChannels,
-  setEditingId,
-  showForm,
-  setShowForm,
-}) {
+function DndGrid() {
+  const { links, setLinks } = useStateManger();
   // ✅ which item is currently "pressed/armed" for drag (during long-press delay)
-  const [armedId, setArmedId] = React.useState(null);
+  const { setArmedId } = useStateManger();
   const justDraggedRef = React.useRef(false);
 
   const sensors = useSensors(
@@ -628,20 +771,11 @@ function DndGrid({
                 <div ref={setNodeRef} style={style}>
                   <ChannleGridItem
                     {...{
-                      isArmed: armedId === link.id,
                       link,
-                      selectedLink,
-                      setSelectedLink,
-                      setLastSelectedLink,
-                      setShowChannels,
                       activatorProps,
                       isDragging,
                       isOver,
-                      setArmedId,
                       justDraggedRef,
-                      setEditingId,
-                      showForm,
-                      setShowForm,
                     }}
                   />
                 </div>
@@ -698,22 +832,24 @@ function useMediaQuery(query) {
 
 function ChannleGridItem({
   link,
-  selectedLink,
-  setSelectedLink,
-  setLastSelectedLink,
-  setShowChannels,
   activatorProps,
   isDragging,
   isOver,
-  isArmed,
-  setArmedId,
   justDraggedRef,
-  setEditingId,
-  showForm,
-  setShowForm,
 }) {
-  const { id, name, url, iconUrl } = link;
-
+  const {
+    selectedLink,
+    setSelectedLink,
+    setLastSelectedLink,
+    // setShowChannels,
+    setArmedId,
+    setEditingId,
+    setActiveScreen,
+    // setShowForm,
+    armedId,
+  } = useStateManger();
+  const { id, name, iconUrl } = link;
+  const isArmed = armedId === id;
   const isSmUp = useMediaQuery("(min-width: 640px)"); // Tailwind sm breakpoint
 
   const tileActivatorProps = !isSmUp
@@ -747,7 +883,7 @@ function ChannleGridItem({
   const handleSelect = () => {
     setLastSelectedLink(selectedLink);
     setSelectedLink(link);
-    setShowChannels(false);
+    setActiveScreen(null);
   };
 
   return (
@@ -761,7 +897,10 @@ function ChannleGridItem({
       }}
       className={[
         "group relative select-none aspect-square w-full rounded-xl overflow-hidden cursor-pointer",
-        "bg-gray-100 dark:bg-gray-700 ring-1 ring-black/5 dark:ring-white/10 transition",
+        " ring-1 ring-black/5 dark:ring-white/10 transition",
+        id == selectedLink?.id
+          ? "bg-slate-400 dark:bg-slate-900 "
+          : " bg-gray-100 dark:bg-gray-700 ",
         isOver
           ? "ring-2 ring-blue-500/70"
           : "hover:ring-2 hover:ring-blue-500/60",
@@ -781,7 +920,12 @@ function ChannleGridItem({
       </div>
 
       {/* label */}
-      <div className="absolute inset-x-0 bottom-0 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition p-2">
+      <div
+        className={`absolute inset-x-0 bottom-0 p-2 ${
+          id !== selectedLink?.id &&
+          "translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition"
+        }`}
+      >
         <div className="w-full rounded-lg bg-black/55 backdrop-blur text-white text-xs font-semibold px-2 py-1 line-clamp-1 text-center">
           {name}
         </div>
@@ -789,50 +933,47 @@ function ChannleGridItem({
 
       {/* ✅ only show drag handle button on sm+ */}
       {isSmUp && (
-        <button
-          {...handleActivatorProps}
-          onClick={(e) => e.stopPropagation()}
-          type="button"
-          className={[
-            "translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition",
-            "text-gray-500 cursor-move hover:text-white hover:bg-gray-400 dark:hover:bg-gray-500",
-            "rounded-md p-1 absolute top-2 right-2 touch-none select-none",
-            isArmed || isDragging
-              ? "opacity-100 translate-y-0 bg-black/20 text-white"
-              : "",
-          ].join(" ")}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth="1.5"
-            stroke="currentColor"
-            className="size-4"
+        <>
+          <button
+            {...handleActivatorProps}
+            onClick={(e) => e.stopPropagation()}
+            type="button"
+            className={[
+              " ",
+              "text-gray-500 cursor-move hover:text-white hover:bg-gray-400 dark:hover:bg-gray-500",
+              "rounded-md md:p-1 absolute top-1 right-1 md:top-2 md:right-2 touch-none select-none",
+              isArmed || isDragging
+                ? "opacity-100  bg-black/20 text-white"
+                : "",
+            ].join(" ")}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M3.75 9h16.5m-16.5 6.75h16.5"
-            />
-          </svg>
-        </button>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              stroke="currentColor"
+              className="size-3 md:size-4"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3.75 9h16.5m-16.5 6.75h16.5"
+              />
+            </svg>
+          </button>
+        </>
       )}
-
       <button
         onClick={(e) => {
           e.stopPropagation();
-          setShowForm(true);
+          setActiveScreen("form");
           setEditingId(id);
         }}
         type="button"
         className={[
-          "translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition",
-          "text-gray-500 cursor-pointer hover:text-white hover:bg-gray-400 dark:hover:bg-gray-500",
-          "rounded-md p-1 absolute top-2 left-2 touch-none select-none",
-          isArmed || isDragging
-            ? "opacity-100 translate-y-0 bg-black/20 text-white"
-            : "",
+          "text-gray-500 cursor-pointer md:hover:text-white md:hover:bg-gray-400 md:dark:hover:bg-gray-500",
+          "rounded-md md:p-1 absolute top-1 left-1 md:top-2 md:left-2  select-none",
         ].join(" ")}
       >
         <svg
@@ -841,7 +982,7 @@ function ChannleGridItem({
           viewBox="0 0 24 24"
           strokeWidth={1.5}
           stroke="currentColor"
-          className="size-4"
+          className="size-3 md:size-4"
         >
           <path
             strokeLinecap="round"
@@ -854,26 +995,43 @@ function ChannleGridItem({
   );
 }
 
-function Form({
-  links,
-  setLinks,
-  selectedLink,
-  setSelectedLink,
-  lastSelectedLink,
-  setLastSelectedLink,
-  showChannels,
-  setShowChannels,
-  setEditingId,
-  editingId,
-  showForm,
-  setShowForm,
-}) {
+// ! ////////////////////////////////////////////////////////////////////////////////////// Channels
+// ! From-------------------------------------------------------------------------------------------------------------------
+function Form() {
+  const {
+    links,
+    setLinks,
+    activeScreen,
+    setActiveScreen,
+    editingId,
+    setEditingId,
+  } = useStateManger();
   const [name, setName] = React.useState("");
   const [url, setUrl] = React.useState("");
   const [iconUrl, setIconUrl] = React.useState("");
   const [error, setError] = React.useState("");
 
-  const handleSubmit = (e) => {};
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (editingId) {
+      // update
+      const newLinks = links.map((link) => {
+        if (link.id === editingId) {
+          return { ...link, name, url, iconUrl };
+        }
+        return link;
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newLinks));
+      setLinks(newLinks);
+    } else {
+      // add
+      const newLink = { id: makeId(), name, url, iconUrl };
+      const newLinks = [...links, newLink];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newLinks));
+      setLinks(newLinks);
+    }
+    close();
+  };
 
   const resetForm = () => {
     setName("");
@@ -882,10 +1040,21 @@ function Form({
     setError("");
   };
 
-  const handleCancel = () => {
+  const close = () => {
     resetForm();
-    setShowForm(false);
+    if (editingId) setActiveScreen("channels");
+    else setActiveScreen(null);
     setEditingId(null);
+  };
+  const handleCancel = () => {
+    if (editingId || name || url || iconUrl) {
+      // alert the user he will lose his changes
+      const answer = window.confirm(
+        "Are you sure you want to discard your changes?"
+      );
+      if (!answer) return;
+      close();
+    } else close();
   };
 
   React.useEffect(() => {
@@ -895,13 +1064,14 @@ function Form({
       setUrl(link.url);
       setIconUrl(link.iconUrl);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editingId]);
   return (
     <div
       className={`size-full absolute top-0 left-0 flex justify-center items-center bg-white/50 dark:bg-gray-500/50  ${
-        showChannels ? "block" : "hidden"
+        activeScreen === "form" ? "block" : "hidden"
       }`}
-      onClick={() => setShowForm((c) => !c)}
+      onClick={handleCancel}
     >
       <div
         className={`size-[90%] flex justify-center items-center px-2 relative overflow-y-auto rounded-lg bg-slate-300 text-slate-900 dark:bg-gray-800 dark:text-slate-100 border border-gray-600 dark:border-gray-300`}
@@ -913,10 +1083,7 @@ function Form({
             topbarButtonClass +
             " absolute top-1 right-1 bg-slate-300 text-slate-900 dark:bg-gray-800 dark:text-slate-100"
           }
-          onClick={() => {
-            setShowForm((c) => !c);
-            handleCancel();
-          }}
+          onClick={handleCancel}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -935,10 +1102,13 @@ function Form({
         </button>
         <form
           className={`flex max-w-md flex-col gap-4 overflow-hidden transition-all duration-400 ease-in-out`}
+          onSubmit={handleSubmit}
         >
           <div>
             <div className="mb-2 block">
-              <Label htmlFor="display_name">Display Name</Label>
+              <Label htmlFor="display_name" className="red-star">
+                Display Name
+              </Label>
             </div>
             <TextInput
               value={name}
@@ -951,7 +1121,9 @@ function Form({
 
           <div>
             <div className="mb-2 block">
-              <Label htmlFor="icon_url">Icon URL</Label>
+              <Label htmlFor="icon_url" className="red-star">
+                Icon URL
+              </Label>
             </div>
             <TextInput
               value={iconUrl}
@@ -964,7 +1136,9 @@ function Form({
 
           <div>
             <div className="mb-2 block">
-              <Label htmlFor="url">URL</Label>
+              <Label htmlFor="url" className="red-star">
+                URL
+              </Label>
             </div>
             <TextInput
               value={url}
@@ -990,7 +1164,7 @@ function Form({
               outline
               className="cursor-pointer font-bold"
             >
-              {editingId ? "Save" : "Add"}
+              {editingId ? "Update" : "Add"}
             </Button>
 
             {/* Cancel edit only when editing */}
@@ -1011,3 +1185,4 @@ function Form({
     </div>
   );
 }
+// ! ////////////////////////////////////////////////////////////////////////////////////// From
