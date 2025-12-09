@@ -1,9 +1,14 @@
 import "./Tailwind.css";
-import Drawer from "./components/Drawer3.jsx";
 import React from "react";
+import { Routes, Route, Link } from "react-router-dom";
+import Drawer from "./components/Drawer3.jsx";
 
 function App() {
-  return <Drawer />;
+  return (
+    <Routes>
+      <Route path="/" element={<Drawer />} />
+    </Routes>
+  );
 }
 
 export default App;
