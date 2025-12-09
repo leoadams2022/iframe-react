@@ -1,13 +1,16 @@
 import "./Tailwind.css";
 import React from "react";
-import { Routes, Route, Link } from "react-router-dom";
+import { Routes, Route, Link, Navigate } from "react-router-dom";
 import Drawer from "./components/Drawer3.jsx";
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Drawer />} />
-    </Routes>
+    <Drawer />
+    // <Routes>
+    //   <Route path="/" element={<Drawer />} />
+    //   {/* catch-all: send any unknown route back to home */}
+    //   <Route path="*" element={<Navigate to="/" replace />} />
+    // </Routes>
   );
 }
 

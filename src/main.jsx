@@ -1,12 +1,14 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
-import { HashRouter as Router } from "react-router-dom";
+// import { HashRouter as Router } from "react-router-dom";
+import { registerSW } from "virtual:pwa-register";
+registerSW({ immediate: true });
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <Router>
-      <App />
-    </Router>
+    {/* <Router> */}
+    <App />
+    {/* </Router> */}
   </StrictMode>
 );
