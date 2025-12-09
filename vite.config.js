@@ -6,6 +6,8 @@ import { VitePWA } from "vite-plugin-pwa";
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: "/iframe-react/dist/",
+
   plugins: [
     react(),
     tailwindcss(),
@@ -19,14 +21,14 @@ export default defineConfig({
         "apple-touch-icon.png",
       ],
       manifest: {
-        name: "My App",
-        short_name: "MyApp",
-        description: "My installable app",
+        name: "Walid TV",
+        short_name: "WalidTV",
+        description: "Walid TV",
         theme_color: "#0f172a",
         background_color: "#0f172a",
         display: "standalone",
-        scope: "/",
-        start_url: "/",
+        start_url: "/iframe-react/dist/",
+        scope: "/iframe-react/dist/",
         icons: [
           { src: "pwa-192x192.png", sizes: "192x192", type: "image/png" },
           { src: "pwa-512x512.png", sizes: "512x512", type: "image/png" },
