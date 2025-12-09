@@ -16,8 +16,228 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Button, Label, TextInput, Popover } from "flowbite-react";
+import Popup from "./Popup";
 const STORAGE_KEY = "iframe_links_v1";
-
+const seeded = [
+  {
+    id: "3c62d5dd-b656-4d6b-b6a9-010ad3820f3d",
+    name: "MBC 1",
+    url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=mbc1",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/mbc1.jpg?v=7",
+  },
+  {
+    id: "3fcf7faa-6d76-4ac7-be3c-94770fa4ccdd",
+    name: "MBC 2",
+    url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=mbc2",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/mbc2.jpg",
+  },
+  {
+    id: "0d555225-ee49-4534-9790-8472ffa4b48a",
+    name: "MBC 3",
+    url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=mbc3",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/mbc3.jpg",
+  },
+  {
+    id: "4bc0dc98-8672-45ff-a124-6fe3896035e3",
+    name: "MBC 4",
+    url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=mbc4",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/mbc4.jpg",
+  },
+  {
+    id: "3dc34409-5cb9-4054-a87a-c2c1ea3a03c8",
+    name: "MBC 5",
+    url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=mbc5",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/mbc5.jpg",
+  },
+  {
+    id: "d75934a1-f1d0-4a99-aadf-acafeb823288",
+    name: "MBC Drama",
+    url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=mbc_drama",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/mbc_drama.jpg",
+  },
+  {
+    id: "6fe29151-320b-49a3-aa8c-9f2a51490c2e",
+    name: "MBC Drama Plus",
+    url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=mbc_drama_plus",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/mbc_drama_plus.jpg",
+  },
+  {
+    id: "8ac9e906-7387-42fd-9d68-1e81b1121468",
+    name: "MBC Maser",
+    url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=mbc_masr",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/mbc_masr.jpg",
+  },
+  {
+    id: "a9fe8296-7ac5-459f-ad24-dbd80552bc61",
+    name: "MBC Maser 2",
+    url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=mbc_masr2",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/mbc_masr2.jpg",
+  },
+  {
+    id: "65fab3f7-b944-498c-9e2b-cbf4d1c4936e",
+    name: "MBC Max",
+    url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=mbc_max",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/mbc-max.jpg",
+  },
+  {
+    id: "7da5d5f5-f4aa-43b7-a90a-4ddb1a5cfc56",
+    name: "MBC Action",
+    url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=mbc_action",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/mbc_action.jpg",
+  },
+  {
+    id: "60939b1c-d433-41b4-8abe-a3df9d9318b6",
+    name: "MBC Variety",
+    url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=mbc_variety",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/mbc_variety.jpg",
+  },
+  {
+    id: "b4788897-cf49-49d2-9b33-5617d1510ba6",
+    name: "CN Arabic",
+    url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=cnarabia",
+    iconUrl:
+      "https://www.elahmad.com/tv/mobiletv/images/CartoonNetwork.jpg?v=7",
+  },
+  {
+    id: "ba1cfb36-76a3-4e72-a653-41c969395c3e",
+    name: "spacetoon",
+    url: "https://www.elahmad.com/tv/mobiletv/glarb.php?id=spacetoon",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/spacetoon.jpg?v=7",
+  },
+  {
+    id: "b408e229-a9c0-4abb-a99a-0e706f4f1e55",
+    name: "Rotana Cinema",
+    url: "https://www.elahmad.com/tv/live/channels.php?id=954",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/rotana_cinema.jpg?v=7",
+  },
+  {
+    id: "1a39c637-9612-4e28-95e6-3326d510b19e",
+    name: "Rotana Classic",
+    url: "https://www.elahmad.com/tv/watchtv.php?id=rotana_classic",
+    iconUrl:
+      "https://www.elahmad.com/tv/mobiletv/images/rotana_classic.jpg?v=7",
+  },
+  {
+    id: "ebc21434-94f9-46ea-8708-41e42360e204",
+    name: "Rotana Aflam+",
+    url: "https://www.elahmad.com/tv/mobiletv/glarb.php?id=rotana_aflam",
+    iconUrl:
+      "https://www.elahmad.com/tv/mobiletv/images/rotana_aflam_plus.jpg?v=7",
+  },
+  {
+    id: "ecf83f17-8bee-4052-bb2d-15940dda7146",
+    name: "Rotana Comedy",
+    url: "https://www.elahmad.com/tv/watchtv.php?id=rotana_comedy",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/rotana_comedy.jpg?v=7",
+  },
+  {
+    id: "a850646f-9a54-4b83-b799-ab00736358ff",
+    name: "Aljazeer",
+    url: "https://www.elahmad.com/tv/radiant.php?id=aljazeer_ar1",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/aljazeera.jpg?v=7",
+  },
+  {
+    id: "f9ee4743-c0dd-439c-8360-c6257a88dbfb",
+    name: "Aljazeera doc",
+    url: "https://www.elahmad.com/tv/radiant.php?id=aljazeeradoc1",
+    iconUrl:
+      "https://www.elahmad.com/tv/mobiletv/images/aljazeera_documentaire.jpg?v=7",
+  },
+  {
+    id: "5b23ff0e-a6b3-490b-9acf-3c5de7784b26",
+    name: "AL arabiya",
+    url: "https://www.elahmad.com/tv/radiant.php?id=alarabiya1",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/alarabiya.jpg?v=7",
+  },
+  {
+    id: "1f253aa9-201f-459a-9408-8c82555af650",
+    name: "AL arabiya AL-hadath",
+    url: "https://www.elahmad.com/tv/radiant.php?id=alarabiya_alhadath1",
+    iconUrl:
+      "https://www.elahmad.com/tv/mobiletv/images/al_arabiya_alhadath.jpg?v=7",
+  },
+  {
+    id: "e8be3b7a-5440-4ad5-9ec5-581f4cefe08e",
+    name: "Dubai one",
+    url: "https://www.elahmad.com/tv/radiant.php?id=dubaione",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/dubai_one.jpg?v=7",
+  },
+  {
+    id: "e72085d6-b79e-45f6-8288-09d0458bc1e0",
+    name: "Nat Geo Abu Dhabi",
+    url: "https://www.elahmad.com/tv/radiant.php?id=natgeo_1",
+    iconUrl:
+      "https://www.elahmad.com/tv/mobiletv/images/national_geographic.jpg?v=7",
+  },
+  {
+    id: "fb3f8cd0-a0b4-4078-9ca6-5df95cf7c83e",
+    name: "Roya TV",
+    url: "https://www.elahmad.com/tv/radiant.php?id=royatv1",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/royatv.jpg?v=7",
+  },
+  {
+    id: "f93fc55f-ed59-4da4-9d95-255ac022c648",
+    name: "Syria 2",
+    url: "https://www.elahmad.com/tv/radiant.php?id=syriatv1",
+    iconUrl:
+      "https://www.elahmad.com/tv/mobiletv/images/syria_althania.jpg?v=7",
+  },
+  {
+    id: "6e2c9454-ec75-4ba2-b3a3-850d45da88b1",
+    name: "Syria",
+    url: "https://www.elahmad.com/tv/mobiletv/glarb.php?id=syria_tv",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/syria_tv.jpg?v=7",
+  },
+  {
+    id: "5e4f44d5-992c-4ff9-bdc7-3054d4d3755e",
+    name: "Lana TV",
+    url: "https://www.elahmad.com/tv/watchtv.php?id=lanatv",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/lana_syria.jpg?v=7",
+  },
+  {
+    id: "153b6dc6-7fe9-4543-b7ed-ca831f4644a6",
+    name: "ALikhbaria Syria",
+    url: "https://www.elahmad.com/tv/mobiletv/glarb.php?id=alikhbaria_syria1",
+    iconUrl:
+      "https://www.elahmad.com/tv/mobiletv/images/alikhbaria_syria.jpg?v=7",
+  },
+  {
+    id: "e6b0468d-0c32-4b68-915c-62e970fe5503",
+    name: "Aljadeed",
+    url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=aljadeed",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/aljadeed_tv.jpg?v=7",
+  },
+  {
+    id: "0bf51a6f-0e55-4f34-a464-8b88b1fbe1e1",
+    name: "MTV lebanon",
+    url: "https://www.elahmad.com/tv/watchtv.php?id=mtv_lebanon",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/mtv.jpg?v=7",
+  },
+  {
+    id: "92fcbe91-8608-44ac-b5d6-47d3422821ba",
+    name: "ON-TV",
+    url: "https://www.elahmad.com/tv/radiant.php?id=ontv1",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/ontveg.jpg?v=7",
+  },
+  {
+    id: "4f148088-d7cf-4b11-a3c1-4027531373c3",
+    name: "TRT arabic",
+    url: "https://www.elahmad.com/tv/radiant.php?id=trt_arabic1",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/trt_arabic.jpg?v=7",
+  },
+  {
+    id: "0a645842-0b9c-49ba-8fb4-fca684165f9c",
+    name: "RT arabic",
+    url: "https://www.elahmad.com/tv/radiant.php?id=rt_ar1",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/russia_today.jpg?v=7",
+  },
+  {
+    id: "9d201972-0663-4420-87d6-96da5d97e3d2",
+    name: "DW arabic",
+    url: "https://www.elahmad.com/tv/radiant.php?id=dw_ar",
+    iconUrl: "https://www.elahmad.com/tv/mobiletv/images/dw.jpg?v=7",
+  },
+];
 const topbarButtonClass =
   "size-6 flex justify-center items-center rounded-full cursor-pointer bg-slate-100 hover:bg-white dark:hover:bg-gray-600 dark:bg-gray-700";
 /* eslint-disable react-refresh/only-export-components */
@@ -27,15 +247,22 @@ const StateMangerContext = React.createContext(undefined);
 
 export function StateMangerProvider({ children }) {
   // ✅ exposed states
-  const [links, setLinks] = React.useState([]);
+  const [links, internalSetLinks] = React.useState([]);
   const [selectedLink, setSelectedLink] = React.useState(null);
   const [lastSelectedLink, setLastSelectedLink] = React.useState(null);
   const [editingId, setEditingId] = React.useState(null);
   const [showTopBar, setShowTopBar] = React.useState(true);
   const [activeScreen, setActiveScreen] = React.useState(null);
-  //   const [showForm, setShowForm] = React.useState(false);
-  //   const [showChannels, setShowChannels] = React.useState(false);
+
   const [armedId, setArmedId] = React.useState(null);
+
+  const setLinks = React.useCallback(
+    (newLinks, save = true) => {
+      if (save) localStorage.setItem(STORAGE_KEY, JSON.stringify(newLinks));
+      internalSetLinks(newLinks);
+    },
+    [internalSetLinks]
+  );
 
   const value = React.useMemo(
     () => ({
@@ -47,26 +274,21 @@ export function StateMangerProvider({ children }) {
       setLastSelectedLink,
       editingId,
       setEditingId,
-      //   showForm,
-      //   setShowForm,
       showTopBar,
       setShowTopBar,
       activeScreen,
       setActiveScreen,
-      //   showChannels,
-      //   setShowChannels,
       armedId,
       setArmedId,
     }),
     [
       links,
+      setLinks,
       selectedLink,
       lastSelectedLink,
       editingId,
-      //   showForm,
       showTopBar,
       activeScreen,
-      //   showChannels,
       armedId,
     ]
   );
@@ -106,8 +328,8 @@ function DrawerUnderContext() {
     setActiveScreen,
   } = useStateManger();
   return (
-    <div className=" w-svw h-svh relative ">
-      <h1 className="text-5xl font-bold text-center absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+    <div className=" w-svw h-svh relative bg-white text-gray-800 dark:bg-gray-800 dark:text-gray-100">
+      <h1 className=" text-5xl font-bold text-center absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
         Pick-a-Channel
       </h1>
       <iframe
@@ -401,271 +623,20 @@ function ensureIds(list) {
 }
 
 function Channels() {
-  const {
-    setLinks,
-    // showChannels,
-    // setShowChannels,
-    activeScreen,
-    setActiveScreen,
-    // showForm,
-    // setShowForm,
-  } = useStateManger();
+  const { setLinks, activeScreen, setActiveScreen } = useStateManger();
   function loadLinks() {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
         const { next, changed } = ensureIds(parsed);
-        setLinks(next);
-        if (changed) localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+        setLinks(next, changed);
       } else {
-        const seeded = [
-          {
-            id: "3c62d5dd-b656-4d6b-b6a9-010ad3820f3d",
-            name: "MBC 1",
-            url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=mbc1",
-            iconUrl: "https://www.elahmad.com/tv/mobiletv/images/mbc1.jpg?v=7",
-          },
-          {
-            id: "3fcf7faa-6d76-4ac7-be3c-94770fa4ccdd",
-            name: "MBC 2",
-            url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=mbc2",
-            iconUrl: "https://www.elahmad.com/tv/mobiletv/images/mbc2.jpg",
-          },
-          {
-            id: "0d555225-ee49-4534-9790-8472ffa4b48a",
-            name: "MBC 3",
-            url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=mbc3",
-            iconUrl: "https://www.elahmad.com/tv/mobiletv/images/mbc3.jpg",
-          },
-          {
-            id: "4bc0dc98-8672-45ff-a124-6fe3896035e3",
-            name: "MBC 4",
-            url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=mbc4",
-            iconUrl: "https://www.elahmad.com/tv/mobiletv/images/mbc4.jpg",
-          },
-          {
-            id: "3dc34409-5cb9-4054-a87a-c2c1ea3a03c8",
-            name: "MBC 5",
-            url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=mbc5",
-            iconUrl: "https://www.elahmad.com/tv/mobiletv/images/mbc5.jpg",
-          },
-          {
-            id: "d75934a1-f1d0-4a99-aadf-acafeb823288",
-            name: "MBC Drama",
-            url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=mbc_drama",
-            iconUrl: "https://www.elahmad.com/tv/mobiletv/images/mbc_drama.jpg",
-          },
-          {
-            id: "6fe29151-320b-49a3-aa8c-9f2a51490c2e",
-            name: "MBC Drama Plus",
-            url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=mbc_drama_plus",
-            iconUrl:
-              "https://www.elahmad.com/tv/mobiletv/images/mbc_drama_plus.jpg",
-          },
-          {
-            id: "8ac9e906-7387-42fd-9d68-1e81b1121468",
-            name: "MBC Maser",
-            url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=mbc_masr",
-            iconUrl: "https://www.elahmad.com/tv/mobiletv/images/mbc_masr.jpg",
-          },
-          {
-            id: "a9fe8296-7ac5-459f-ad24-dbd80552bc61",
-            name: "MBC Maser 2",
-            url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=mbc_masr2",
-            iconUrl: "https://www.elahmad.com/tv/mobiletv/images/mbc_masr2.jpg",
-          },
-          {
-            id: "65fab3f7-b944-498c-9e2b-cbf4d1c4936e",
-            name: "MBC Max",
-            url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=mbc_max",
-            iconUrl: "https://www.elahmad.com/tv/mobiletv/images/mbc-max.jpg",
-          },
-          {
-            id: "7da5d5f5-f4aa-43b7-a90a-4ddb1a5cfc56",
-            name: "MBC Action",
-            url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=mbc_action",
-            iconUrl:
-              "https://www.elahmad.com/tv/mobiletv/images/mbc_action.jpg",
-          },
-          {
-            id: "60939b1c-d433-41b4-8abe-a3df9d9318b6",
-            name: "MBC Variety",
-            url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=mbc_variety",
-            iconUrl:
-              "https://www.elahmad.com/tv/mobiletv/images/mbc_variety.jpg",
-          },
-          {
-            id: "b4788897-cf49-49d2-9b33-5617d1510ba6",
-            name: "CN Arabic",
-            url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=cnarabia",
-            iconUrl:
-              "https://www.elahmad.com/tv/mobiletv/images/CartoonNetwork.jpg?v=7",
-          },
-          {
-            id: "ba1cfb36-76a3-4e72-a653-41c969395c3e",
-            name: "spacetoon",
-            url: "https://www.elahmad.com/tv/mobiletv/glarb.php?id=spacetoon",
-            iconUrl:
-              "https://www.elahmad.com/tv/mobiletv/images/spacetoon.jpg?v=7",
-          },
-          {
-            id: "b408e229-a9c0-4abb-a99a-0e706f4f1e55",
-            name: "Rotana Cinema",
-            url: "https://www.elahmad.com/tv/live/channels.php?id=954",
-            iconUrl:
-              "https://www.elahmad.com/tv/mobiletv/images/rotana_cinema.jpg?v=7",
-          },
-          {
-            id: "1a39c637-9612-4e28-95e6-3326d510b19e",
-            name: "Rotana Classic",
-            url: "https://www.elahmad.com/tv/watchtv.php?id=rotana_classic",
-            iconUrl:
-              "https://www.elahmad.com/tv/mobiletv/images/rotana_classic.jpg?v=7",
-          },
-          {
-            id: "ebc21434-94f9-46ea-8708-41e42360e204",
-            name: "Rotana Aflam+",
-            url: "https://www.elahmad.com/tv/mobiletv/glarb.php?id=rotana_aflam",
-            iconUrl:
-              "https://www.elahmad.com/tv/mobiletv/images/rotana_aflam_plus.jpg?v=7",
-          },
-          {
-            id: "ecf83f17-8bee-4052-bb2d-15940dda7146",
-            name: "Rotana Comedy",
-            url: "https://www.elahmad.com/tv/watchtv.php?id=rotana_comedy",
-            iconUrl:
-              "https://www.elahmad.com/tv/mobiletv/images/rotana_comedy.jpg?v=7",
-          },
-          {
-            id: "a850646f-9a54-4b83-b799-ab00736358ff",
-            name: "Aljazeer",
-            url: "https://www.elahmad.com/tv/radiant.php?id=aljazeer_ar1",
-            iconUrl:
-              "https://www.elahmad.com/tv/mobiletv/images/aljazeera.jpg?v=7",
-          },
-          {
-            id: "f9ee4743-c0dd-439c-8360-c6257a88dbfb",
-            name: "Aljazeera doc",
-            url: "https://www.elahmad.com/tv/radiant.php?id=aljazeeradoc1",
-            iconUrl:
-              "https://www.elahmad.com/tv/mobiletv/images/aljazeera_documentaire.jpg?v=7",
-          },
-          {
-            id: "5b23ff0e-a6b3-490b-9acf-3c5de7784b26",
-            name: "AL arabiya",
-            url: "https://www.elahmad.com/tv/radiant.php?id=alarabiya1",
-            iconUrl:
-              "https://www.elahmad.com/tv/mobiletv/images/alarabiya.jpg?v=7",
-          },
-          {
-            id: "1f253aa9-201f-459a-9408-8c82555af650",
-            name: "AL arabiya AL-hadath",
-            url: "https://www.elahmad.com/tv/radiant.php?id=alarabiya_alhadath1",
-            iconUrl:
-              "https://www.elahmad.com/tv/mobiletv/images/al_arabiya_alhadath.jpg?v=7",
-          },
-          {
-            id: "e8be3b7a-5440-4ad5-9ec5-581f4cefe08e",
-            name: "Dubai one",
-            url: "https://www.elahmad.com/tv/radiant.php?id=dubaione",
-            iconUrl:
-              "https://www.elahmad.com/tv/mobiletv/images/dubai_one.jpg?v=7",
-          },
-          {
-            id: "e72085d6-b79e-45f6-8288-09d0458bc1e0",
-            name: "Nat Geo Abu Dhabi",
-            url: "https://www.elahmad.com/tv/radiant.php?id=natgeo_1",
-            iconUrl:
-              "https://www.elahmad.com/tv/mobiletv/images/national_geographic.jpg?v=7",
-          },
-          {
-            id: "fb3f8cd0-a0b4-4078-9ca6-5df95cf7c83e",
-            name: "Roya TV",
-            url: "https://www.elahmad.com/tv/radiant.php?id=royatv1",
-            iconUrl:
-              "https://www.elahmad.com/tv/mobiletv/images/royatv.jpg?v=7",
-          },
-          {
-            id: "f93fc55f-ed59-4da4-9d95-255ac022c648",
-            name: "Syria 2",
-            url: "https://www.elahmad.com/tv/radiant.php?id=syriatv1",
-            iconUrl:
-              "https://www.elahmad.com/tv/mobiletv/images/syria_althania.jpg?v=7",
-          },
-          {
-            id: "6e2c9454-ec75-4ba2-b3a3-850d45da88b1",
-            name: "Syria",
-            url: "https://www.elahmad.com/tv/mobiletv/glarb.php?id=syria_tv",
-            iconUrl:
-              "https://www.elahmad.com/tv/mobiletv/images/syria_tv.jpg?v=7",
-          },
-          {
-            id: "5e4f44d5-992c-4ff9-bdc7-3054d4d3755e",
-            name: "Lana TV",
-            url: "https://www.elahmad.com/tv/watchtv.php?id=lanatv",
-            iconUrl:
-              "https://www.elahmad.com/tv/mobiletv/images/lana_syria.jpg?v=7",
-          },
-          {
-            id: "153b6dc6-7fe9-4543-b7ed-ca831f4644a6",
-            name: "ALikhbaria Syria",
-            url: "https://www.elahmad.com/tv/mobiletv/glarb.php?id=alikhbaria_syria1",
-            iconUrl:
-              "https://www.elahmad.com/tv/mobiletv/images/alikhbaria_syria.jpg?v=7",
-          },
-          {
-            id: "e6b0468d-0c32-4b68-915c-62e970fe5503",
-            name: "Aljadeed",
-            url: "https://www.elahmad.com/tv/live/shahid_shaka.php?id=aljadeed",
-            iconUrl:
-              "https://www.elahmad.com/tv/mobiletv/images/aljadeed_tv.jpg?v=7",
-          },
-          {
-            id: "0bf51a6f-0e55-4f34-a464-8b88b1fbe1e1",
-            name: "MTV lebanon",
-            url: "https://www.elahmad.com/tv/watchtv.php?id=mtv_lebanon",
-            iconUrl: "https://www.elahmad.com/tv/mobiletv/images/mtv.jpg?v=7",
-          },
-          {
-            id: "92fcbe91-8608-44ac-b5d6-47d3422821ba",
-            name: "ON-TV",
-            url: "https://www.elahmad.com/tv/radiant.php?id=ontv1",
-            iconUrl:
-              "https://www.elahmad.com/tv/mobiletv/images/ontveg.jpg?v=7",
-          },
-          {
-            id: "4f148088-d7cf-4b11-a3c1-4027531373c3",
-            name: "TRT arabic",
-            url: "https://www.elahmad.com/tv/radiant.php?id=trt_arabic1",
-            iconUrl:
-              "https://www.elahmad.com/tv/mobiletv/images/trt_arabic.jpg?v=7",
-          },
-          {
-            id: "0a645842-0b9c-49ba-8fb4-fca684165f9c",
-            name: "RT arabic",
-            url: "https://www.elahmad.com/tv/radiant.php?id=rt_ar1",
-            iconUrl:
-              "https://www.elahmad.com/tv/mobiletv/images/russia_today.jpg?v=7",
-          },
-          {
-            id: "9d201972-0663-4420-87d6-96da5d97e3d2",
-            name: "DW arabic",
-            url: "https://www.elahmad.com/tv/radiant.php?id=dw_ar",
-            iconUrl: "https://www.elahmad.com/tv/mobiletv/images/dw.jpg?v=7",
-          },
-        ];
-        // const seeded = Array.from({ length: 10 }, (_, i) => ({
-        //   id: makeId(),
-        //   name: `Link ${i + 1}`,
-        //   url: `https://link${i + 1}.com`,
-        // }));
-        // setLinks(seeded);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
+        setLinks(seeded);
       }
     } catch (e) {
       console.warn("Failed to load from localStorage, starting empty.", e);
-      setLinks([]);
+      setLinks(seeded);
     }
   }
 
@@ -739,7 +710,6 @@ function DndGrid() {
 
     const next = arrayMove(links, oldIndex, newIndex);
     setLinks(next);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
   }
 
   return (
@@ -838,6 +808,8 @@ function ChannleGridItem({
   justDraggedRef,
 }) {
   const {
+    links,
+    setLinks,
     selectedLink,
     setSelectedLink,
     setLastSelectedLink,
@@ -851,6 +823,7 @@ function ChannleGridItem({
   const { id, name, iconUrl } = link;
   const isArmed = armedId === id;
   const isSmUp = useMediaQuery("(min-width: 640px)"); // Tailwind sm breakpoint
+  const [open, setOpen] = React.useState(false);
 
   const tileActivatorProps = !isSmUp
     ? {
@@ -884,6 +857,20 @@ function ChannleGridItem({
     setLastSelectedLink(selectedLink);
     setSelectedLink(link);
     setActiveScreen(null);
+  };
+
+  const handleEdit = (e) => {
+    e.stopPropagation();
+    setActiveScreen("form");
+    setEditingId(id);
+  };
+
+  const handleDelete = (e) => {
+    e.stopPropagation();
+    const ok = window.confirm(`Delete this Channel? \n\n"${name}"`);
+    if (!ok) return;
+    const filtered = links.filter((l) => l.id !== id);
+    setLinks(filtered);
   };
 
   return (
@@ -964,33 +951,91 @@ function ChannleGridItem({
           </button>
         </>
       )}
-      <button
+      <div
         onClick={(e) => {
           e.stopPropagation();
-          setActiveScreen("form");
-          setEditingId(id);
         }}
         type="button"
-        className={[
-          "text-gray-500 cursor-pointer md:hover:text-white md:hover:bg-gray-400 md:dark:hover:bg-gray-500",
-          "rounded-md md:p-1 absolute top-1 left-1 md:top-2 md:left-2  select-none",
-        ].join(" ")}
       >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          strokeWidth={1.5}
-          stroke="currentColor"
-          className="size-3 md:size-4"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-          />
-        </svg>
-      </button>
+        <Popup
+          open={open}
+          onOpenChange={setOpen}
+          triggerButton={
+            <button
+              className={[
+                " text-gray-500 cursor-pointer md:hover:text-white md:hover:bg-gray-400 md:dark:hover:bg-gray-500",
+                "rounded-md md:p-1 absolute top-1 left-1 md:top-2 md:left-2  select-none",
+              ].join(" ")}
+              onClick={() => setOpen((v) => !v)}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="size-3 md:size-4"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                />
+              </svg>
+            </button>
+          }
+          content={
+            <div className="w-8 h-16 flex flex-col justify-center items-center gap-1 bg-slate-400 text-white rounded-sm dark:bg-black/50 backdrop-blur">
+              <button
+                onClick={handleEdit}
+                type="button"
+                className={[
+                  "cursor-pointer hover:scale-120",
+                  "p-1  select-none",
+                ].join(" ")}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                  className="size-4"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                  />
+                </svg>
+              </button>
+              <button
+                onClick={handleDelete}
+                type="button"
+                className={[
+                  "cursor-pointer hover:scale-120 text-red-500",
+                  "p-1  select-none",
+                ].join(" ")}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={2}
+                  stroke="currentColor"
+                  className="size-4"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                  />
+                </svg>
+              </button>
+            </div>
+          }
+        />
+      </div>
     </div>
   );
 }
@@ -1021,13 +1066,11 @@ function Form() {
         }
         return link;
       });
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newLinks));
       setLinks(newLinks);
     } else {
       // add
       const newLink = { id: makeId(), name, url, iconUrl };
       const newLinks = [...links, newLink];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newLinks));
       setLinks(newLinks);
     }
     close();
