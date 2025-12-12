@@ -1,1 +1,1 @@
-if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/dist/sw.js', { scope: '/dist/' })})}
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/iframe-react/dist/sw.js', { scope: '/iframe-react/dist/' })})}
